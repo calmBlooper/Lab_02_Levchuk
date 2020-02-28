@@ -3,10 +3,45 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Lab_02_Levchuk"
+        xmlns:ViewModels="clr-namespace:Lab_02_Levchuk.ViewModels"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="500" Width="800">
+    <Window.DataContext>
+        <ViewModels:MainVM />
+    </Window.DataContext>
     <Grid>
-
+        <Grid.RowDefinitions>
+            <RowDefinition Height="90"></RowDefinition>
+            <RowDefinition Height="90"></RowDefinition>
+            <RowDefinition Height="90"></RowDefinition>
+            <RowDefinition Height="90"></RowDefinition>
+            <RowDefinition Height="90"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="400"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Row="0" Grid.Column="0">
+            <TextBlock FontSize="18" Text="Enter your name" HorizontalAlignment="Center" Margin="10"/>
+            <TextBox FontSize="18" Height="30" Width="300" VerticalAlignment="Center" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
+        </StackPanel>
+        <StackPanel Grid.Row="1" Grid.Column="0">
+            <TextBlock FontSize="18" Text="Enter your surname" HorizontalAlignment="Center" Margin="10"/>
+            <TextBox FontSize="18" Height="30" Width="300" VerticalAlignment="Center" Text="{Binding Surname, UpdateSourceTrigger=PropertyChanged}"/>
+        </StackPanel>
+        <StackPanel Grid.Row="2" Grid.Column="0">
+            <TextBlock FontSize="18" Text="Enter your email address" HorizontalAlignment="Center" Margin="10"/>
+            <TextBox FontSize="18" Height="30" Width="300" VerticalAlignment="Center" Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}"/>
+        </StackPanel>
+        <StackPanel Grid.Row="3" Grid.Column="0">
+            <TextBlock FontSize="18" Text="Choose your date of birth" HorizontalAlignment="Center" Margin="10"/>
+            <DatePicker FontSize="18" Height="30" Width="300" VerticalAlignment="Center" SelectedDate="{Binding ChosenDate, UpdateSourceTrigger=PropertyChanged}"/>
+        </StackPanel>
+        <Button Grid.Row="4" Grid.Column="0" FontSize="18" Content="Proceed" Height="50" Width="200" VerticalAlignment="Top" Margin="10" Command="{Binding ButtonCommand}" IsEnabled="{Binding ButtonEnabled}"/>
+        <TextBlock Grid.ColumnSpan="2" Grid.RowSpan="4" Grid.Row="0" Grid.Column="1" FontSize="18" Height="300" Width="300" Text="{Binding UserInfo, Mode=OneWay}"/>
+        <fa:ImageAwesome Name="_loader"  Icon="Refresh" Grid.ZIndex="3" Grid.Row="1" Grid.Column="0"
+                                    Grid.ColumnSpan="3"  Grid.RowSpan="3" Width="50" Height="50" Spin="True" Visibility="{Binding LoaderVisibility, Mode=OneWay}"></fa:ImageAwesome>
     </Grid>
 </Window>
