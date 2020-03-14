@@ -1,5 +1,6 @@
 ﻿using Lab_02_Levchuk.Models;
 using Lab_02_Levchuk.Tools;
+using Lab_02_Levchuk.Tools.Exceptions;
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -18,8 +19,8 @@ namespace Lab_02_Levchuk.ViewModels
         {
             ButtonCommand = new RelayCommand(o => MainButtonClick("MainButton"));
         }
-        public event PropertyChangedEventHandler PropertyChanged;
-        public string Name
+         public event PropertyChangedEventHandler PropertyChanged;
+         public string Name
         {
             set
             {
@@ -54,9 +55,25 @@ namespace Lab_02_Levchuk.ViewModels
             }
             get => _chosenDate;
         }
-        public bool ButtonEnabled
+         public bool ButtonEnabled
         {
-            get => !string.IsNullOrWhiteSpace(Name) && !string.IsNullOrWhiteSpace(Surname) && !string.IsNullOrWhiteSpace(Email)&&ChosenDate.HasValue; 
+            get => LoaderVisibility == Visibility.Collapsed&& !string.IsNullOrWhiteSpace(Name) && !string.IsNullOrWhiteSpace(Surname) && !string.IsNullOrWhiteSpace(Email)&&ChosenDate.HasValue; 
+        }
+        public bool NameEnabled
+        {
+            get => LoaderVisibility ==Visibility.Collapsed;
+        }
+        public bool SurnameEnabled
+        {
+            get => LoaderVisibility == Visibility.Collapsed;
+        }
+        public bool EmailEnabled
+        {
+            get => LoaderVisibility == Visibility.Collapsed;
+        }
+        public bool DateEnabled
+        {
+            get => LoaderVisibility == Visibility.Collapsed;
         }
         public string UserInfo { set; get; } = "";
         public Visibility LoaderVisibility { set; get; } = Visibility.Collapsed;
@@ -67,36 +84,34 @@ namespace Lab_02_Levchuk.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
         }
-        private int GetAge(DateTime enteredDate)
-        {
-            int Age = DateTime.Now.Year - enteredDate.Year;
-            if (enteredDate.AddYears(Age) > DateTime.Now) Age--;
-            return Age;
-        }
-        private bool BirthdayCorrect(DateTime enteredDate)
-        {
-            if (enteredDate.Year < DateTime.Now.Year)   return GetAge(enteredDate)<=135;
-            if (enteredDate.Year == DateTime.Now.Year&& enteredDate.Month < DateTime.Now.Month) return GetAge(enteredDate) < 135;
-            if (enteredDate.Year == DateTime.Now.Year && enteredDate.Month == DateTime.Now.Month && enteredDate.Day < DateTime.Now.Day) return GetAge(enteredDate) < 135;
-            return false;
-        }
+
+
     
-        
+        private void CheckInterface()
+        {
+            OnPropertyChanged("NameEnabled");
+            OnPropertyChanged("SurnameEnabled");
+            OnPropertyChanged("EmailEnabled");
+            OnPropertyChanged("DateEnabled");
+            OnPropertyChanged("ButtonEnabled");
+
+        }
         private async void MainButtonClick(object sender)
         {
             ShowLoader();
             await Task.Run(() =>
             {
-                if (BirthdayCorrect(ChosenDate.Value))
+                try
                 {
-                   if (_userObject==null) _userObject = new Person(Name, Surname, Email, ChosenDate.Value);
-                   else
+                    if (_userObject == null) _userObject = new Person(Name, Surname, Email, ChosenDate.Value);
+                    else
                     {
                         _userObject.Name = Name;
                         _userObject.Surname = Surname;
                         _userObject.Email = Email;
                         _userObject.BirthDay = ChosenDate.Value;
                     }
+
                     UserInfo = "Name: " + _userObject.Name +
                     "\nSurname: " + _userObject.Surname +
                     "\nEmail: " + _userObject.Email +
@@ -106,21 +121,26 @@ namespace Lab_02_Levchuk.ViewModels
                     "\nChinese sign: " + _userObject.ChineseSign +
                     "\nIs birthday today: " + (_userObject.IsBirthday ? "Yes" : "No");
                     OnPropertyChanged("UserInfo");
+                    HideLoader();
+                    if (_userObject.IsBirthday) MessageBox.Show("He, it`s your birthday today! Congratulations!");
+                    CheckInterface();
                 }
-                else
+                catch (Exception ex)
                 {
+                    HideLoader();
                     UserInfo = "";
                     OnPropertyChanged("UserInfo");
-                }
+                    MessageBox.Show(ex.Message);
+                    CheckInterface();
+                }  
             });
-            HideLoader();
-            if (!BirthdayCorrect(ChosenDate.Value))  MessageBox.Show("Your entered date of birth is wrong.\nYou can not be less than 1 day old, or older than 135 years old.");
-            else if (_userObject.IsBirthday) MessageBox.Show("Hey, it`s your birthday today! Congratulations!");
+
         }
         private void ShowLoader()
         {
             LoaderVisibility = Visibility.Visible;
             OnPropertyChanged("LoaderVisibility");
+            CheckInterface();
         }
         private void HideLoader()
         {

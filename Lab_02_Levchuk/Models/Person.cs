@@ -1,5 +1,6 @@
 ﻿using System;
-
+using System.Text.RegularExpressions;
+using Lab_02_Levchuk.Tools.Exceptions;
 namespace Lab_02_Levchuk.Models
 {
     class Person
@@ -8,25 +9,22 @@ namespace Lab_02_Levchuk.Models
         private DateTime _birthDay;
         //Eastern zodiacs helping array, for easier and faster computation of the "ChineseSign" method
         private  string[] _chineseZodiacs = { "Monkey", "Rooster", "Dog", "Pig", "Rat", "Ox", "Tiger", "Rabbit", "Dragon", "Snake", "Horse", "Goat" };
-        public Person(string name, string surname, string email)
+        private Person(string name, string surname, string email):this(name,surname,email,DateTime.Now)
         {
-            _name = name;
-            _surname = surname;
-            _email = email;
         }
 
         public Person(string name, string surname, string email, DateTime birthDay)
         {
             _name = name;
             _surname = surname;
+
+            CheckEmail(email);
             _email = email;
+            BirthdayCorrect(birthDay);
             _birthDay = birthDay;
         }
-        public Person(string name, string surname, DateTime birthDay)
+        private Person(string name, string surname, DateTime birthDay):this(name,surname,string.Empty,birthDay)
         {
-            _name = name;
-            _surname = surname;
-            _birthDay = birthDay;
         }
         public String Name
         {
@@ -40,12 +38,19 @@ namespace Lab_02_Levchuk.Models
         }
         public String Email
         {
-            set => _email = value;
+            set
+            {
+                CheckEmail(value);
+                _email = value;
+            }
             get => _email;
         }
         public DateTime BirthDay
         {
-            set => _birthDay = value;
+            set {
+                BirthdayCorrect(value);
+                _birthDay = value;
+                    }
             get => _birthDay;
         }
         public bool IsAdult {
@@ -126,17 +131,40 @@ namespace Lab_02_Levchuk.Models
                 }
             }
         }
-public string ChineseSign {
+        public string ChineseSign {
             get
             {
                 return _chineseZodiacs[_birthDay.Year % 12];
             }
             }
-public bool IsBirthday
+        public bool IsBirthday
         {
             get
             {
                 return DateTime.Now.Month == _birthDay.Month && DateTime.Now.Day == _birthDay.Day;
+            }
+        }
+        private void CheckEmail(string input)
+        {
+            var regex = @"\A(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)\Z";
+            if (!Regex.IsMatch(input, regex, RegexOptions.IgnoreCase)) throw new WrongEmailException("Wrong email! The correct format is: username@domainname.com");
+        }
+        private int GetAge(DateTime enteredDate)
+        {
+            int Age = DateTime.Now.Year - enteredDate.Year;
+            if (enteredDate.AddYears(Age) > DateTime.Now) Age--;
+            return Age;
+        }
+        private void BirthdayCorrect(DateTime enteredDate)
+        {
+            if (enteredDate.Year > DateTime.Now.Year) throw new FutureDateException("You can not be born in the future! Try again.");
+            else {
+                if (enteredDate.Year == DateTime.Now.Year)
+                { 
+                    if (enteredDate.Month > DateTime.Now.Month) throw new FutureDateException("You can not be born in the future! Try again.");
+                    else if (enteredDate.Month == DateTime.Now.Month&& enteredDate.Day > DateTime.Now.Day) throw new FutureDateException("You can not be born in the future! Try again.");
+                }
+                else if (GetAge(enteredDate) > 135) throw new ArentYouDeadException("You can not be more than 135 years old! Try again.");
             }
         }
     }
